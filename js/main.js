@@ -1,4 +1,4 @@
-import { compile } from "./parser.js";
+import { compile, normalizeLatex } from "./parser.js";
 import { createGraph } from "./graph.js";
 import { renderMode, inShade, shadedArea } from "./modes.js";
 
@@ -18,12 +18,12 @@ function delay(ms) {
 }
 
 // display only; the parser is what actually evaluates the expression
-function toLatex(expr) {
+function toLatexBody(expr) {
   let s = expr.replace(/sqrt\(([^()]+)\)/g, "\\sqrt{$1}");
   s = s.replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|ln|log|exp)\b/g, "\\$1 ");
   s = s.replace(/\bpi\b/g, "\\pi");
   s = s.replace(/\*/g, " \\cdot ");
-  return "f(x) = " + s;
+  return s;
 }
 
 // clamp samples so one asymptote spike doesn't flatten the rest of the curve
@@ -76,7 +76,7 @@ function init() {
     if (!text) return;
     let fn;
     try {
-      fn = compile(text);
+      fn = compile(normalizeLatex(text));
       fn(0);
     } catch {
       input.classList.add("is-error");
@@ -85,7 +85,8 @@ function init() {
     input.classList.remove("is-error");
     state.fn = fn;
     updateView(graph, fn);
-    katex.render(toLatex(text), display, { displayMode: true, throwOnError: false });
+    const body = text.includes("\\") ? text : toLatexBody(text);
+    katex.render("f(x) = " + body, display, { displayMode: true, throwOnError: false });
     redraw();
   }
 

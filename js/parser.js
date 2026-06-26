@@ -146,6 +146,63 @@ function applyOp(op, a, b) {
   }
 }
 
+const LATEX_FUNCS =
+  "sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|exp|ln|log|sqrt|abs";
+
+// read a {...} group with brace matching, or a single token for \frac12 style
+function readGroup(s, i) {
+  while (i < s.length && s[i] === " ") i++;
+  if (s[i] === "{") {
+    let depth = 0;
+    const start = i + 1;
+    for (; i < s.length; i++) {
+      if (s[i] === "{") depth++;
+      else if (s[i] === "}" && --depth === 0) return { body: s.slice(start, i), end: i + 1 };
+    }
+    return { body: s.slice(start), end: s.length };
+  }
+  if (i < s.length && /[a-zA-Z0-9.]/.test(s[i])) return { body: s[i], end: i + 1 };
+  return { body: "", end: i };
+}
+
+// recurse so nested \frac in numerator or denominator also expands
+function replaceFrac(s) {
+  if (!s.includes("\\frac")) return s;
+  let out = "";
+  let i = 0;
+  while (i < s.length) {
+    if (s.startsWith("\\frac", i)) {
+      const a = readGroup(s, i + 5);
+      const b = readGroup(s, a.end);
+      out += "((" + replaceFrac(a.body) + ")/(" + replaceFrac(b.body) + "))";
+      i = b.end;
+    } else {
+      out += s[i++];
+    }
+  }
+  return out;
+}
+
+// LaTeX integrand to plain expression; not a full \int...dx=... parser
+export function normalizeLatex(src) {
+  let s = src;
+  s = s.replace(/\\left|\\right/g, "");
+  s = s.replace(/\\,|\\;|\\:|\\!|\\quad|\\qquad/g, " ");
+  s = replaceFrac(s);
+  s = s.replace(/\^\s*{([^{}]*)}/g, "^($1)");
+  s = s.replace(/\\cdot|\\times/g, "*");
+  s = s.replace(/\\pi\b/g, "pi");
+  s = s.replace(new RegExp(`\\\\(${LATEX_FUNCS})`, "g"), "$1");
+  s = s.replace(/\\([a-zA-Z]+)/g, "$1");
+  // \cos^2 x means (cos x)^2, so the exponent has to move outside the call
+  const powered = new RegExp(
+    `(${LATEX_FUNCS})\\s*\\^\\s*(\\([^()]*\\)|[0-9.]+)\\s*(\\([^()]*\\)|[a-zA-Z][a-zA-Z0-9]*|[0-9.]+)`,
+    "g"
+  );
+  s = s.replace(powered, (_, fn, pow, arg) => `(${fn}(${arg}))^${pow}`);
+  return s;
+}
+
 // throws on bad input; callers keep the last valid function
 export function compile(src) {
   const rpn = toRPN(tokenize(src));
