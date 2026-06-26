@@ -4,7 +4,7 @@ const CURVE = "#f2f2f2";
 
 export function createGraph(canvas) {
   const ctx = canvas.getContext("2d");
-  let view = { xmin: -6.5, xmax: 6.5, ymin: -3, ymax: 3 };
+  let view = { xmin: -2 * Math.PI, xmax: 2 * Math.PI, ymin: -3, ymax: 3 };
   let w = 0;
   let h = 0;
 

@@ -173,3 +173,115 @@ body {
   font-family: "SFMono-Regular", "Consolas", monospace;
   font-size: 14px;
 }
+
+.settings-btn {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--faint);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-btn:hover {
+  color: var(--fg);
+  border-color: var(--line);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-card {
+  width: min(420px, 90vw);
+  padding: 28px;
+  background: #0c0c0c;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.modal-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-desc {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.field input {
+  padding: 10px 12px;
+  background: #000;
+  border: 1px solid var(--faint);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: "SFMono-Regular", "Consolas", monospace;
+  font-size: 15px;
+  outline: none;
+}
+
+.field input:focus {
+  border-color: var(--line);
+}
+
+.field input.is-error {
+  border-color: #ff6b6b;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.modal-btn {
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid var(--faint);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.modal-btn.is-primary {
+  background: #5b8cff;
+  border-color: #5b8cff;
+  color: #000;
+  font-weight: 600;
+}

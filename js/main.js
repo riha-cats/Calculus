@@ -58,6 +58,10 @@ function init() {
   const readout = document.getElementById("readout");
   const tooltip = document.getElementById("tooltip");
   const modeButtons = [...document.querySelectorAll(".mode-btn")];
+  const settings = document.getElementById("settings");
+  const settingsBtn = document.getElementById("settings-btn");
+  const xminInput = document.getElementById("xmin");
+  const xmaxInput = document.getElementById("xmax");
 
   const graph = createGraph(canvas);
   const state = { mode: "tangent", fn: null, c: 0 };
@@ -109,6 +113,60 @@ function init() {
     const v = graph.getView();
     state.c = v.xmin + parseFloat(bar.value) * (v.xmax - v.xmin);
     redraw();
+  });
+
+  // bounds accept expressions like -2*pi, so evaluate them through the parser
+  function evalBound(src) {
+    const value = compile(normalizeLatex(src.trim()))(0);
+    if (!isFinite(value)) throw new Error("not finite");
+    return value;
+  }
+
+  function openSettings() {
+    const v = graph.getView();
+    xminInput.value = v.xmin.toFixed(4);
+    xmaxInput.value = v.xmax.toFixed(4);
+    [xminInput, xmaxInput].forEach((el) => el.classList.remove("is-error"));
+    settings.hidden = false;
+  }
+
+  function applySettings() {
+    let xmin;
+    let xmax;
+    try {
+      xmin = evalBound(xminInput.value);
+    } catch {
+      xminInput.classList.add("is-error");
+      return;
+    }
+    try {
+      xmax = evalBound(xmaxInput.value);
+    } catch {
+      xmaxInput.classList.add("is-error");
+      return;
+    }
+    if (xmin >= xmax) {
+      xminInput.classList.add("is-error");
+      xmaxInput.classList.add("is-error");
+      return;
+    }
+    graph.setView({ ...graph.getView(), xmin, xmax });
+    if (state.fn) updateView(graph, state.fn);
+    state.c = xmin + parseFloat(bar.value) * (xmax - xmin);
+    settings.hidden = true;
+    redraw();
+  }
+
+  settingsBtn.addEventListener("click", openSettings);
+  document.getElementById("settings-apply").addEventListener("click", applySettings);
+  document.getElementById("settings-close").addEventListener("click", () => {
+    settings.hidden = true;
+  });
+  settings.addEventListener("click", (e) => {
+    if (e.target === settings) settings.hidden = true;
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") settings.hidden = true;
   });
 
   canvas.addEventListener("mousemove", (e) => {
