@@ -1,6 +1,6 @@
 import { compile } from "./parser.js";
 import { createGraph } from "./graph.js";
-import { renderMode } from "./modes.js";
+import { renderMode, inShade, shadedArea } from "./modes.js";
 
 const MIN_SPLASH_MS = 2000;
 const DEFAULT_EXPR = "sin(x)";
@@ -62,6 +62,7 @@ function init() {
   const canvas = document.getElementById("graph");
   const bar = document.getElementById("bar");
   const readout = document.getElementById("readout");
+  const tooltip = document.getElementById("tooltip");
   const modeButtons = [...document.querySelectorAll(".mode-btn")];
 
   const graph = createGraph(canvas);
@@ -97,6 +98,7 @@ function init() {
   function setMode(mode) {
     state.mode = mode;
     modeButtons.forEach((b) => b.classList.toggle("is-active", b.dataset.mode === mode));
+    tooltip.hidden = true;
     redraw();
   }
 
@@ -112,6 +114,27 @@ function init() {
     const v = graph.getView();
     state.c = v.xmin + parseFloat(bar.value) * (v.xmax - v.xmin);
     redraw();
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    if (state.mode !== "ftc" || !state.fn) {
+      tooltip.hidden = true;
+      return;
+    }
+    const x = graph.worldX(e.offsetX);
+    const y = graph.worldY(e.offsetY);
+    if (inShade(state.fn, state.c, x, y)) {
+      tooltip.hidden = false;
+      tooltip.style.left = `${e.offsetX}px`;
+      tooltip.style.top = `${e.offsetY}px`;
+      tooltip.textContent = `area = ${shadedArea(state.fn, state.c).toFixed(3)}`;
+    } else {
+      tooltip.hidden = true;
+    }
+  });
+
+  canvas.addEventListener("mouseleave", () => {
+    tooltip.hidden = true;
   });
 
   window.addEventListener("resize", redraw);

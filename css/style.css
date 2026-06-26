@@ -135,12 +135,30 @@ body {
   border-color: var(--line);
 }
 
+.graph-wrap {
+  position: relative;
+}
+
 .graph {
   display: block;
   width: 100%;
   height: 360px;
   border: 1px solid var(--faint);
   border-radius: 12px;
+}
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -135%);
+  padding: 4px 9px;
+  background: rgba(18, 18, 18, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--fg);
+  font-family: "SFMono-Regular", "Consolas", monospace;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .bar {

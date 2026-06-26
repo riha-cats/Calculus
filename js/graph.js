@@ -90,6 +90,8 @@ export function createGraph(canvas) {
     curve,
     px,
     py,
+    worldX: (sx) => view.xmin + (sx / w) * (view.xmax - view.xmin),
+    worldY: (sy) => view.ymax - (sy / h) * (view.ymax - view.ymin),
     getView: () => view,
     setView: (v) => {
       view = v;

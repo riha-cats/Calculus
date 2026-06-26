@@ -102,6 +102,23 @@ function fundamental(g, fn, c) {
   return `F(x) = area = ${area.toFixed(3)}    F'(x) = f(x) = ${fn(c).toFixed(3)}`;
 }
 
+export function shadedArea(fn, c) {
+  return integral(fn, ORIGIN, c);
+}
+
+/**
+ * Test whether a world point falls inside the fundamental theorem shading,
+ * which spans 0..c horizontally and lies between the axis and the curve.
+ */
+export function inShade(fn, c, x, y) {
+  const lo = Math.min(ORIGIN, c);
+  const hi = Math.max(ORIGIN, c);
+  if (x < lo || x > hi) return false;
+  const fx = fn(x);
+  if (!isFinite(fx)) return false;
+  return y >= Math.min(0, fx) && y <= Math.max(0, fx);
+}
+
 /**
  * Draw the overlay for the active mode and return a one line readout.
  */
