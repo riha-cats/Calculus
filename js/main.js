@@ -137,12 +137,24 @@ function init() {
     return value;
   }
 
+  let settingsHideTimer = null;
   function openSettings() {
     const v = graph.getView();
     xminInput.value = v.xmin.toFixed(4);
     xmaxInput.value = v.xmax.toFixed(4);
     [xminInput, xmaxInput].forEach((el) => el.classList.remove("is-error"));
+    clearTimeout(settingsHideTimer);
     settings.hidden = false;
+    // reflow so the opacity transition runs from the hidden state
+    void settings.offsetWidth;
+    settings.classList.add("is-open");
+  }
+
+  function closeSettings() {
+    settings.classList.remove("is-open");
+    settingsHideTimer = setTimeout(() => {
+      settings.hidden = true;
+    }, 250);
   }
 
   function applySettings() {
@@ -168,20 +180,18 @@ function init() {
     graph.setView({ ...graph.getView(), xmin, xmax });
     if (state.fn) updateView(graph, state.fn);
     state.c = xmin + parseFloat(bar.value) * (xmax - xmin);
-    settings.hidden = true;
+    closeSettings();
     redraw();
   }
 
   settingsBtn.addEventListener("click", openSettings);
   document.getElementById("settings-apply").addEventListener("click", applySettings);
-  document.getElementById("settings-close").addEventListener("click", () => {
-    settings.hidden = true;
-  });
+  document.getElementById("settings-close").addEventListener("click", closeSettings);
   settings.addEventListener("click", (e) => {
-    if (e.target === settings) settings.hidden = true;
+    if (e.target === settings) closeSettings();
   });
   window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") settings.hidden = true;
+    if (e.key === "Escape" && !settings.hidden) closeSettings();
   });
 
   canvas.addEventListener("mousemove", (e) => {
