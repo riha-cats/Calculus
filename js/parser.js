@@ -82,11 +82,7 @@ function popWhile(ops, out, cur) {
   }
 }
 
-/**
- * Convert an infix token list to reverse Polish notation.
- * Inserts implicit multiplication (2x, x(x+1)) and routes a leading minus
- * to a unary neg operator so -x^2 parses as -(x^2).
- */
+// shunting-yard, plus implicit * (2x, x(x+1)) and unary minus so -x^2 stays -(x^2)
 function toRPN(tokens) {
   const out = [];
   const ops = [];
@@ -150,10 +146,7 @@ function applyOp(op, a, b) {
   }
 }
 
-/**
- * Compile a function expression in x into a numeric evaluator.
- * Throws on malformed input so callers can keep the last valid function.
- */
+// throws on bad input; callers keep the last valid function
 export function compile(src) {
   const rpn = toRPN(tokenize(src));
   return function (x) {

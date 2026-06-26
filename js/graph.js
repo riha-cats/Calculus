@@ -2,16 +2,13 @@ const GRID = "rgba(255, 255, 255, 0.06)";
 const AXIS = "rgba(255, 255, 255, 0.35)";
 const CURVE = "#f2f2f2";
 
-/**
- * Build a 2D plotter over a canvas with a world coordinate view.
- * fit() must run while the canvas is visible so its CSS box has a size.
- */
 export function createGraph(canvas) {
   const ctx = canvas.getContext("2d");
   let view = { xmin: -6.5, xmax: 6.5, ymin: -3, ymax: 3 };
   let w = 0;
   let h = 0;
 
+  // must run while the canvas is visible; a hidden box measures as 0
   function fit() {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -52,10 +49,7 @@ export function createGraph(canvas) {
     ctx.stroke();
   }
 
-  /**
-   * Stroke y = fn(x) across the viewport, lifting the pen on non-finite
-   * values and on large jumps so vertical asymptotes are not bridged.
-   */
+  // lift the pen on gaps and big jumps, otherwise asymptotes get bridged
   function curve(fn, color = CURVE) {
     const span = view.ymax - view.ymin;
     ctx.lineWidth = 2;

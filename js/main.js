@@ -17,10 +17,7 @@ function delay(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-/**
- * Turn a plain function expression into light LaTeX for the display.
- * Only the common cases are covered; the parser remains the source of truth.
- */
+// display only; the parser is what actually evaluates the expression
 function toLatex(expr) {
   let s = expr.replace(/sqrt\(([^()]+)\)/g, "\\sqrt{$1}");
   s = s.replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|ln|log|exp)\b/g, "\\$1 ");
@@ -29,10 +26,7 @@ function toLatex(expr) {
   return "f(x) = " + s;
 }
 
-/**
- * Fit the y range to the sampled function, ignoring blow ups so a single
- * spike near an asymptote does not flatten the rest of the curve.
- */
+// clamp samples so one asymptote spike doesn't flatten the rest of the curve
 function updateView(graph, fn) {
   const v = graph.getView();
   let lo = Infinity;

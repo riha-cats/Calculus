@@ -8,10 +8,7 @@ function derivative(fn, x) {
   return (fn(x + h) - fn(x - h)) / (2 * h);
 }
 
-/**
- * Trapezoidal integral of fn from a to b. Used for the accumulated area
- * where accuracy matters more than the coarse Riemann rectangles.
- */
+// trapezoid for accuracy; the Riemann rectangles stay coarse on purpose
 function integral(fn, a, b, steps = 400) {
   const dx = (b - a) / steps;
   let sum = 0;
@@ -106,10 +103,7 @@ export function shadedArea(fn, c) {
   return integral(fn, ORIGIN, c);
 }
 
-/**
- * Test whether a world point falls inside the fundamental theorem shading,
- * which spans 0..c horizontally and lies between the axis and the curve.
- */
+// shaded region spans 0..c, between the axis and the curve
 export function inShade(fn, c, x, y) {
   const lo = Math.min(ORIGIN, c);
   const hi = Math.max(ORIGIN, c);
@@ -119,9 +113,6 @@ export function inShade(fn, c, x, y) {
   return y >= Math.min(0, fx) && y <= Math.max(0, fx);
 }
 
-/**
- * Draw the overlay for the active mode and return a one line readout.
- */
 export function renderMode(graph, mode, fn, c) {
   if (mode === "tangent") return tangent(graph, fn, c);
   if (mode === "riemann") return riemann(graph, fn, c);
