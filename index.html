@@ -26,12 +26,25 @@
         type="text"
         spellcheck="false"
         autocomplete="off"
-        aria-label="LaTeX input"
+        aria-label="function of x"
       />
     </div>
+
+    <section class="panel">
+      <div class="modes">
+        <button class="mode-btn is-active" data-mode="tangent">접선의 기울기</button>
+        <button class="mode-btn" data-mode="riemann">리만 합</button>
+        <button class="mode-btn" data-mode="ftc">기본 정리</button>
+      </div>
+
+      <canvas id="graph" class="graph"></canvas>
+
+      <input id="bar" class="bar" type="range" min="0" max="1" step="0.001" value="0.5" />
+      <div id="readout" class="readout"></div>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" defer></script>
-  <script src="js/main.js" defer></script>
+  <script src="js/main.js" type="module"></script>
 </body>
 </html>

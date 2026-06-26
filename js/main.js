@@ -1,11 +1,10 @@
-const MIN_SPLASH_MS = 2000;
-const DEFAULT_LATEX = "\\frac{d}{dx}\\int_{a}^{x} f(t)\\,dt = f(x)";
+import { compile } from "./parser.js";
+import { createGraph } from "./graph.js";
+import { renderMode } from "./modes.js";
 
-/**
- * Resolve once fonts and KaTeX are usable.
- * Waits on the load event so the deferred KaTeX script has run, then on
- * document.fonts so math and Pretendard glyphs are ready before reveal.
- */
+const MIN_SPLASH_MS = 2000;
+const DEFAULT_EXPR = "sin(x)";
+
 function whenReady() {
   const loaded =
     document.readyState === "complete"
@@ -19,24 +18,40 @@ function delay(ms) {
 }
 
 /**
- * Render a LaTeX string into the display, ignoring syntax errors so a
- * half-typed formula does not blank the output.
+ * Turn a plain function expression into light LaTeX for the display.
+ * Only the common cases are covered; the parser remains the source of truth.
  */
-function renderFormula(latex, target) {
-  katex.render(latex, target, {
-    displayMode: true,
-    throwOnError: false,
-  });
+function toLatex(expr) {
+  let s = expr.replace(/sqrt\(([^()]+)\)/g, "\\sqrt{$1}");
+  s = s.replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|ln|log|exp)\b/g, "\\$1 ");
+  s = s.replace(/\bpi\b/g, "\\pi");
+  s = s.replace(/\*/g, " \\cdot ");
+  return "f(x) = " + s;
 }
 
-function hideLoader(loader, stage) {
-  loader.classList.add("is-done");
-  stage.hidden = false;
-  loader.addEventListener(
-    "transitionend",
-    () => loader.remove(),
-    { once: true }
-  );
+/**
+ * Fit the y range to the sampled function, ignoring blow ups so a single
+ * spike near an asymptote does not flatten the rest of the curve.
+ */
+function updateView(graph, fn) {
+  const v = graph.getView();
+  let lo = Infinity;
+  let hi = -Infinity;
+  const steps = 400;
+  for (let i = 0; i <= steps; i++) {
+    const x = v.xmin + (i / steps) * (v.xmax - v.xmin);
+    const y = fn(x);
+    if (isFinite(y) && Math.abs(y) < 1e4) {
+      lo = Math.min(lo, y);
+      hi = Math.max(hi, y);
+    }
+  }
+  if (!isFinite(lo)) {
+    graph.setView({ ...v, ymin: -3, ymax: 3 });
+    return;
+  }
+  const pad = (hi - lo) * 0.15 || 1;
+  graph.setView({ ...v, ymin: lo - pad, ymax: hi + pad });
 }
 
 function init() {
@@ -44,14 +59,73 @@ function init() {
   const stage = document.querySelector(".stage");
   const display = document.getElementById("display");
   const input = document.getElementById("formula");
+  const canvas = document.getElementById("graph");
+  const bar = document.getElementById("bar");
+  const readout = document.getElementById("readout");
+  const modeButtons = [...document.querySelectorAll(".mode-btn")];
 
-  input.value = DEFAULT_LATEX;
-  renderFormula(DEFAULT_LATEX, display);
-  input.addEventListener("input", () => renderFormula(input.value, display));
+  const graph = createGraph(canvas);
+  const state = { mode: "tangent", fn: null, c: 0 };
 
-  Promise.all([whenReady(), delay(MIN_SPLASH_MS)]).then(() =>
-    hideLoader(loader, stage)
+  function redraw() {
+    graph.fit();
+    graph.clear();
+    graph.axes();
+    if (!state.fn) return;
+    graph.curve(state.fn);
+    readout.textContent = renderMode(graph, state.mode, state.fn, state.c);
+  }
+
+  function applyExpr(src) {
+    const text = src.trim();
+    if (!text) return;
+    let fn;
+    try {
+      fn = compile(text);
+      fn(0);
+    } catch {
+      input.classList.add("is-error");
+      return;
+    }
+    input.classList.remove("is-error");
+    state.fn = fn;
+    updateView(graph, fn);
+    katex.render(toLatex(text), display, { displayMode: true, throwOnError: false });
+    redraw();
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    modeButtons.forEach((b) => b.classList.toggle("is-active", b.dataset.mode === mode));
+    redraw();
+  }
+
+  input.value = DEFAULT_EXPR;
+  applyExpr(DEFAULT_EXPR);
+  input.addEventListener("input", () => applyExpr(input.value));
+
+  modeButtons.forEach((b) =>
+    b.addEventListener("click", () => setMode(b.dataset.mode))
   );
+
+  bar.addEventListener("input", () => {
+    const v = graph.getView();
+    state.c = v.xmin + parseFloat(bar.value) * (v.xmax - v.xmin);
+    redraw();
+  });
+
+  window.addEventListener("resize", redraw);
+
+  Promise.all([whenReady(), delay(MIN_SPLASH_MS)]).then(() => {
+    loader.classList.add("is-done");
+    stage.hidden = false;
+    loader.addEventListener("transitionend", () => loader.remove(), { once: true });
+    requestAnimationFrame(redraw);
+  });
 }
 
-window.addEventListener("DOMContentLoaded", init);
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
