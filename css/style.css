@@ -114,25 +114,34 @@ body {
 
 .modes {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
 }
 
 .mode-btn {
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid var(--faint);
-  border-radius: 8px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #1d1d1d, #101010);
   color: var(--muted);
   font-family: inherit;
   font-size: 14px;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 2px 8px rgba(140, 140, 140, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.mode-btn:hover {
+  color: var(--fg);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(150, 150, 150, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .mode-btn.is-active {
   color: var(--fg);
-  border-color: var(--line);
+  border-color: rgba(91, 140, 255, 0.5);
+  background: linear-gradient(180deg, #2b3140, #14161d);
+  box-shadow: 0 3px 10px rgba(150, 150, 150, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .graph-wrap {
@@ -161,9 +170,66 @@ body {
   pointer-events: none;
 }
 
+.bar-wrap {
+  position: relative;
+}
+
 .bar {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: #5b8cff;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+  cursor: pointer;
+}
+
+.bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fg);
+  border: none;
+  transition: transform 0.15s ease;
+}
+
+.bar::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fg);
+  border: none;
+  transition: transform 0.15s ease;
+}
+
+.bar:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.bar:active::-moz-range-thumb {
+  transform: scale(1.2);
+}
+
+.bar-bubble {
+  position: absolute;
+  bottom: 20px;
+  transform: translateX(-50%);
+  padding: 3px 9px;
+  background: var(--fg);
+  color: #000;
+  border-radius: 6px;
+  font-family: "SFMono-Regular", "Consolas", monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.bar-bubble.is-visible {
+  opacity: 1;
 }
 
 .readout {

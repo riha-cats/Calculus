@@ -55,6 +55,7 @@ function init() {
   const input = document.getElementById("formula");
   const canvas = document.getElementById("graph");
   const bar = document.getElementById("bar");
+  const barBubble = document.getElementById("bar-bubble");
   const readout = document.getElementById("readout");
   const tooltip = document.getElementById("tooltip");
   const modeButtons = [...document.querySelectorAll(".mode-btn")];
@@ -109,9 +110,23 @@ function init() {
     b.addEventListener("click", () => setMode(b.dataset.mode))
   );
 
+  // thumb is 16px wide, so its center travels over width minus one thumb
+  const THUMB = 16;
+  let barHideTimer = null;
+  function flashBubble() {
+    const t = parseFloat(bar.value);
+    const width = bar.getBoundingClientRect().width;
+    barBubble.style.left = `${THUMB / 2 + t * (width - THUMB)}px`;
+    barBubble.textContent = `x = ${state.c.toFixed(2)}`;
+    barBubble.classList.add("is-visible");
+    clearTimeout(barHideTimer);
+    barHideTimer = setTimeout(() => barBubble.classList.remove("is-visible"), 900);
+  }
+
   bar.addEventListener("input", () => {
     const v = graph.getView();
     state.c = v.xmin + parseFloat(bar.value) * (v.xmax - v.xmin);
+    flashBubble();
     redraw();
   });
 
